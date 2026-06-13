@@ -21,6 +21,8 @@ static HBITMAP LoadBitmapFromExeDir(const TCHAR *name)
     lstrcat(path, name);
     return (HBITMAP)LoadImage(NULL, path, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 }
+int LOCX[14]={292,328,365,402,438,475,511,548,585,622,658,695,731,768};
+int LOCY[14]={87,123,160,197,233,270,307,343,380,417,453,490,526,562};
 LRESULT CALLBACK WndProc(HWND hwnd,
                          UINT msg,
                          WPARAM wParam,
@@ -60,21 +62,33 @@ LRESULT CALLBACK WndProc(HWND hwnd,
                memDC,
                0, 0,
                SRCCOPY);
-        if(currentPlayer == 1)
+
+        for (int i = 0; i < BOARD_SIZE; i++)
         {
-             SelectObject(memDC, hBlack);
-        }
-        else
-        {
-             SelectObject(memDC, hWhite);
+            for (int j = 0; j < BOARD_SIZE; j++)
+            {
+                if (board[i][j] == 1)
+                {
+                    SelectObject(memDC, hBlack);
+                }
+                else if (board[i][j] == 2)
+                {
+                    SelectObject(memDC, hWhite);
+                }
+                else
+                {
+                    continue;
+                }
+
+                BitBlt(hdc,
+                       LOCX[i],LOCY[j],
+                       32, 32,
+                       memDC,
+                       0, 0,
+                       SRCCOPY);
+            }
         }
 
-        BitBlt(hdc,
-               292,87,
-               32,32,
-               memDC,
-               0, 0,
-               SRCCOPY);
         DeleteDC(memDC);
 
         EndPaint(hwnd, &ps);
@@ -96,8 +110,7 @@ LRESULT CALLBACK WndProc(HWND hwnd,
         return 0;
     }
     }
-        return DefWindowProc(hwnd, msg, wParam, lParam);
-    
+    return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
 int WINAPI WinMain(HINSTANCE hInstance,

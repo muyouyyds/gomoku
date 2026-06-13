@@ -42,7 +42,8 @@ int TryPlace(int i, int j)
 {
     if (PlacePiece(i, j, currentPlayer))
     {
-        currentPlayer = GetNextPlayer();
+        board[i][j] = currentPlayer; // 更新棋盘状态
+        currentPlayer = GetNextPlayer(); // 切换玩家
         return 1;
     }
     return 0;
@@ -51,10 +52,33 @@ int TryPlace(int i, int j)
 
 int ToGridX(int mouseX)
 {
-    return (mouseX - 292 + 18) / 36;
+    for (int i = 0; i < BOARD_SIZE-1; i++)
+    {
+        if (mouseX >= LOCX[i]&& mouseX <= LOCX[i+1])
+        {
+            return i;
+        }
+    }
+   
+    if (mouseX >= LOCX[BOARD_SIZE-1]) // 处理最后一个网格的情况
+    {
+        return 13; // 返回最后一个网格的索引
+    }
+    return -1; // 返回 -1 表示未找到对应的网格位置
 }
 
 int ToGridY(int mouseY)
 {
-    return (mouseY - 87 + 18) / 36;
+    for (int j = 0; j < BOARD_SIZE-1; j++)
+    {
+        if (mouseY >= LOCY[j] && mouseY <= LOCY[j+1])
+        {
+            return j;
+        }
+        if (mouseY >= LOCY[BOARD_SIZE-1]) // 处理最后一个网格的情况
+        {
+            return 13; // 返回最后一个网格的索引
+        }
+    }
+    return -1; // 返回 -1 表示未找到对应的网格位置  
 }
