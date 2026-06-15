@@ -1,10 +1,13 @@
 #include <windows.h>
 #include <tchar.h>
 #include "game.h"
+#define UNICODE
+#define _UNICODE
 
 HBITMAP hBoard;
 HBITMAP hBlack;
 HBITMAP hWhite;
+HBITMAP habout;
 
 static HBITMAP LoadBitmapFromExeDir(const TCHAR *name)
 {
@@ -21,8 +24,8 @@ static HBITMAP LoadBitmapFromExeDir(const TCHAR *name)
     lstrcat(path, name);
     return (HBITMAP)LoadImage(NULL, path, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 }
-int LOCX[14]={292,328,365,402,438,475,511,548,585,622,658,695,731,768};
-int LOCY[14]={87,123,160,197,233,270,307,343,380,417,453,490,526,562};
+int LOCX[15] = {292, 328, 365, 402, 438, 475, 511, 548, 585, 622, 658, 695, 731, 768, 801};
+int LOCY[15] = {87, 123, 160, 197, 233, 270, 307, 343, 380, 417, 453, 490, 526, 562, 596};
 LRESULT CALLBACK WndProc(HWND hwnd,
                          UINT msg,
                          WPARAM wParam,
@@ -30,6 +33,11 @@ LRESULT CALLBACK WndProc(HWND hwnd,
 {
     switch (msg)
     {
+    case WM_SETCURSOR:
+    {
+        SetCursor(LoadCursor(NULL, IDC_ARROW));
+        return TRUE;
+    }
     case WM_CREATE:
     {
         hBoard = LoadBitmapFromExeDir(TEXT("board.bmp"));
@@ -81,7 +89,7 @@ LRESULT CALLBACK WndProc(HWND hwnd,
                 }
 
                 BitBlt(hdc,
-                       LOCX[i],LOCY[j],
+                       LOCX[i], LOCY[j],
                        32, 32,
                        memDC,
                        0, 0,
@@ -107,9 +115,78 @@ LRESULT CALLBACK WndProc(HWND hwnd,
         {
             InvalidateRect(hwnd, NULL, TRUE);
         }
+        if (x > 36 && y > 150 && x < 197 && y < 185)
+        {
+            gamestatus = 0;
+            for (int i = 0; i < BOARD_SIZE; i++)
+            {
+                for (int j = 0; j < BOARD_SIZE; j++)
+                {
+                    board[i][j] = 0;
+                }
+            }
+            InvalidateRect(hwnd, NULL, TRUE);
+        }
+        if (x > 36 && y > 74 && x < 197 && y < 107)
+        {
+            CreateWindow(
+                TEXT("PictureWindow"), // 窗口类型名字
+                TEXT("说明"),          // 标题栏文字
+                WS_CAPTION | WS_SYSMENU | WS_VISIBLE,
+                300, // x
+                300, // y
+                415, // 宽
+                572, // 高
+                NULL,
+                NULL,
+                GetModuleHandle(NULL),
+                NULL);
+        }
         return 0;
     }
     }
+    return DefWindowProc(hwnd, msg, wParam, lParam);
+}
+
+LRESULT CALLBACK ChildProc(HWND hwnd,
+                           UINT msg,
+                           WPARAM wParam,
+                           LPARAM lParam)
+{
+    switch (msg)
+    {
+    case WM_CREATE:
+        habout = LoadBitmapFromExeDir(TEXT("about.bmp"));
+        return 0;
+    case WM_PAINT:
+    {
+        PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(hwnd, &ps);
+        HDC memDC = CreateCompatibleDC(hdc);
+
+        SelectObject(memDC, habout);
+
+        BitBlt(hdc,
+               0, 0,
+               415, 572,
+               memDC,
+               0, 0,
+               SRCCOPY);
+
+        DeleteDC(memDC);
+
+        EndPaint(hwnd, &ps);
+
+        return 0;
+    }
+    case WM_DESTROY:
+        if (habout)
+        {
+            DeleteObject(habout);
+        }
+        return 0;
+    }
+
     return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
@@ -128,6 +205,13 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
     RegisterClass(&wc);
 
+    WNDCLASS child = {};
+
+    child.lpfnWndProc = ChildProc;
+    child.hInstance = hInstance;
+    child.lpszClassName = TEXT("PictureWindow");
+
+    RegisterClass(&child);
     // 创建窗口
     HWND hwnd = CreateWindow(
         TEXT("GomokuWindow"),
