@@ -9,6 +9,10 @@ HBITMAP hBlack;
 HBITMAP hWhite;
 HBITMAP habout;
 
+static const UINT_PTR TIMER_ID = 1;
+static int elapsedSeconds = 0;
+static BOOL timerRunning = FALSE;
+
 static HBITMAP LoadBitmapFromExeDir(const TCHAR *name)
 {
     TCHAR path[MAX_PATH];
@@ -99,6 +103,15 @@ LRESULT CALLBACK WndProc(HWND hwnd,
             }
         }
 
+        {
+            TCHAR timerText[32];
+            wsprintf(timerText, TEXT("%d"), elapsedSeconds);
+            lstrcat(timerText, TEXT("s"));
+            SetBkMode(hdc, TRANSPARENT);
+            SetTextColor(hdc, RGB(0, 0, 0));
+            TextOut(hdc, 720, 38, timerText, lstrlen(timerText));
+        }
+
         DeleteDC(memDC);
 
         EndPaint(hwnd, &ps);
@@ -120,6 +133,12 @@ LRESULT CALLBACK WndProc(HWND hwnd,
         if (x > 36 && y > 150 && x < 197 && y < 185)
         {
             gamestatus = 0;
+            elapsedSeconds = 0;
+            if (!timerRunning)
+            {
+                SetTimer(hwnd, TIMER_ID, 1000, NULL);
+                timerRunning = TRUE;
+            }
             for (int i = 0; i < BOARD_SIZE; i++)
             {
                 for (int j = 0; j < BOARD_SIZE; j++)
@@ -144,6 +163,15 @@ LRESULT CALLBACK WndProc(HWND hwnd,
                 NULL,
                 GetModuleHandle(NULL),
                 NULL);
+        }
+        return 0;
+    }
+    case WM_TIMER:
+    {
+        if (wParam == TIMER_ID && timerRunning)
+        {
+            elapsedSeconds++;
+            InvalidateRect(hwnd, NULL, TRUE);
         }
         return 0;
     }
