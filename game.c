@@ -1,6 +1,7 @@
 #include "game.h"
 #include <windows.h>
-
+#define UNICODE
+#define _UNICODE
 int board[BOARD_SIZE][BOARD_SIZE] = {0}; //创建棋盘数组
 int gamestatus = -1; // -1:stop, 0: ongoing, 1: black wins, 2: white wins
 void initBoard(void)
@@ -49,7 +50,7 @@ int TryPlace(int i, int j)
         if (CheckWin(i, j))
     {    
        gamestatus = currentPlayer;
-       MessageBox(NULL, (currentPlayer == 1) ? TEXT("黑棋获胜！") : TEXT("白棋获胜！"), TEXT("游戏结束"), MB_OK);
+       MessageBoxW(NULL, (currentPlayer == 1) ? L"黑棋获胜！" : L"白棋获胜！", L"游戏结束", MB_OK);
     }
     currentPlayer = GetNextPlayer(); // 切换玩家
         return 1;

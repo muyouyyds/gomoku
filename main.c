@@ -1,6 +1,6 @@
 #include <windows.h>
-#include <tchar.h>
 #include "game.h"
+#include <tchar.h>
 #define UNICODE
 #define _UNICODE
 
@@ -24,8 +24,10 @@ static HBITMAP LoadBitmapFromExeDir(const TCHAR *name)
     lstrcat(path, name);
     return (HBITMAP)LoadImage(NULL, path, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 }
-int LOCX[15] = {292, 328, 365, 402, 438, 475, 511, 548, 585, 622, 658, 695, 731, 768, 801};
-int LOCY[15] = {87, 123, 160, 197, 233, 270, 307, 343, 380, 417, 453, 490, 526, 562, 596};
+
+int LOCX[16] = {276, 312, 349, 386, 422, 459, 495, 532, 569, 606, 642, 679, 715, 752, 785, 816};
+int LOCY[16] = {71, 107, 144, 181, 217, 254, 291, 327, 364, 401, 437, 474, 510, 546, 580, 618};
+
 LRESULT CALLBACK WndProc(HWND hwnd,
                          UINT msg,
                          WPARAM wParam,
@@ -90,7 +92,7 @@ LRESULT CALLBACK WndProc(HWND hwnd,
 
                 BitBlt(hdc,
                        LOCX[i], LOCY[j],
-                       32, 32,
+                       36, 36,
                        memDC,
                        0, 0,
                        SRCCOPY);
@@ -125,13 +127,14 @@ LRESULT CALLBACK WndProc(HWND hwnd,
                     board[i][j] = 0;
                 }
             }
+            currentPlayer = 1;
             InvalidateRect(hwnd, NULL, TRUE);
         }
         if (x > 36 && y > 74 && x < 197 && y < 107)
         {
-            CreateWindow(
-                TEXT("PictureWindow"), // 窗口类型名字
-                TEXT("说明"),          // 标题栏文字
+            CreateWindowW(
+                L"PictureWindow", // 窗口类型名字
+                L"说明",          // 标题栏文字
                 WS_CAPTION | WS_SYSMENU | WS_VISIBLE,
                 300, // x
                 300, // y
@@ -196,7 +199,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
                    int nCmdShow)
 // 入口函数
 {
-    // 注册窗口类 窗口类是一个结构体，包含了窗口的属性和行为。我们需要注册一个窗口类，以便创建窗口。
+    // 注册窗口类 
     WNDCLASS wc = {};
 
     wc.lpfnWndProc = WndProc;                // 谁来处理窗口消息
@@ -213,10 +216,11 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
     RegisterClass(&child);
     // 创建窗口
-    HWND hwnd = CreateWindow(
-        TEXT("GomokuWindow"),
-        TEXT("五子棋"),
-        WS_OVERLAPPEDWINDOW & ~WS_THICKFRAME & ~WS_MAXIMIZEBOX,
+    HWND hwnd = CreateWindowExW(
+        0,
+        L"GomokuWindow",
+        L"五子棋",
+        WS_OVERLAPPEDWINDOW & ~(WS_THICKFRAME | WS_MAXIMIZEBOX),
         CW_USEDEFAULT,
         CW_USEDEFAULT,
         1024,
@@ -225,7 +229,6 @@ int WINAPI WinMain(HINSTANCE hInstance,
         NULL,
         hInstance,
         NULL);
-
     if (hwnd == NULL)
     {
         return 0;
